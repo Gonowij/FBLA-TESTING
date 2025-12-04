@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>North Carolina Museum Of Art</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">  
+  <meta name="description" content="An Art Gallery website for FBLA Exploring Website Design. Learn about our exhibits, featured artists, and information for visitors.">
+  <style>
+    :root{
+      --bg:#0a0e1a;
+      --card:#0f1522;
+      --accent:#ffb84d;
+      --accent-2:#ff8c42;
+      --muted:#9ca5b8;
+      --glass: rgba(255,255,255,0.05);
+      --glass-2: rgba(255,255,255,0.02);
+      --radius:18px;
+      --max-width:1200px;
+      --ease: cubic-bezier(.22,.9,.39,1);
+      --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:radial-gradient(ellipse at top, #1a1f35 0%, var(--bg) 50%);font-family:var(--font-sans);color:#e8f0ff;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--max-width);margin:0 auto;padding:40px 28px; min-height: 80vh;}
+
+    /* Loading Screen */
+    .loading-screen{position:fixed;inset:0;background:linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .6s ease, visibility .6s ease}
+    .loading-screen.hide{opacity:0;visibility:hidden}
+    .spinner{width:50px;height:50px;border:4px solid rgba(255,184,77,0.2);border-top:4px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-tip{color:var(--muted);font-size:14px;text-align:center;max-width:300px;line-height:1.6}
+
+    /* Navigation */
+    header{position:fixed;left:0;right:0;top:20px;z-index:60;display:flex;justify-content:center;pointer-events:none}
+    nav{pointer-events:auto;background:linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));backdrop-filter: blur(12px);border-radius:16px;padding:12px 20px;display:flex;gap:16px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.08)}
+    .brand{display:flex;align-items:center;gap:12px;padding-right:12px; cursor: pointer;}
+    .logo{width:48px;height:48px;background:conic-gradient(from 200deg at 50% 50%,var(--accent),#7fd3ff,#b28dff,var(--accent));border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0a0e1a;font-size:18px;box-shadow:0 4px 16px rgba(255,184,77,0.3)}
+    .title{font-weight:800;letter-spacing:0.3px;font-size:15px}
+    .nav-links{display:flex;gap:6px;align-items:center}
+    .nav-links button {
+        background: transparent;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        transition: all .3s var(--ease);
+        font-size: 14px;
+        cursor: pointer;
+        font-family: var(--font-sans);
+    }
+    .nav-links button:hover, .nav-links button.active {
+        color: #ffffff;
+        background: rgba(255,255,255,0.06);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .cta{background:linear-gradient(135deg,var(--accent),var(--accent-2)) !important; color:#0a0e1a !important; font-weight:700 !important; box-shadow:0 4px 16px rgba(255,184,77,0.3) !important;}
+    .cta:hover{box-shadow:0 6px 24px rgba(255,184,77,0.4) !important;transform:translateY(-2px)}
+
+    main{padding-top:130px}
+
+    /* Page Structure */
+    .page {
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .page.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+        animation: fadeSlideUp 0.6s var(--ease) forwards;
+    }
+
+    @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero */
+    .hero{display:grid;grid-template-columns:1fr 480px;gap:40px;align-items:center;padding:60px 0 80px;position:relative}
+    .hero-card{background:linear-gradient(135deg,var(--glass),var(--glass-2));border-radius:24px;padding:44px;box-shadow:0 16px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden}
+    .kicker{display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(255,184,77,0.1);color:var(--accent);font-weight:700;margin-bottom:16px;font-size:13px;border:1px solid rgba(255,184,77,0.2)}
+    h1{font-size:clamp(32px,4.8vw,54px);margin:0 0 16px;line-height:1.08;font-weight:900;background:linear-gradient(135deg, #fff 0%, #b8d4ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    p.lead{margin:0;color:var(--muted);font-size:1.08rem;line-height:1.6}
+    .hero-actions{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
+
+    /* Section Headers */
+    .section-header{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:32px}
+    .section-title{font-size:32px;font-weight:900;background:linear-gradient(135deg, #fff 0%, #b8d4ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .section-sub{color:var(--muted);font-size:16px;margin-top:4px}
+
+    /* Exhibitions Calendar */
+    .calendar{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+    .event-card{background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));padding:24px;border-radius:18px;min-height:160px;display:flex;flex-direction:column;gap:12px;transition:all .4s var(--ease);border:1px solid rgba(255,255,255,0.05);position:relative;overflow:hidden}
+    .event-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg, var(--accent), var(--accent-2));transform:scaleX(0);transition:transform .4s var(--ease)}
+    .event-card:hover{transform:translateY(-8px);box-shadow:0 24px 48px rgba(0,0,0,0.4);border-color:rgba(255,255,255,0.1)}
+    .event-card:hover::before{transform:scaleX(1)}
+    .date-pill{background:rgba(255,184,77,0.12);padding:8px 12px;border-radius:10px;font-weight:700;color:var(--accent);display:inline-block;font-size:13px;border:1px solid rgba(255,184,77,0.2)}
+    .event-card h3{margin:4px 0;font-size:20px;font-weight:800}
+
+    /* Featured Artists */
+    .grid-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+    .artist-card{background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));padding:16px;border-radius:20px;border:1px solid rgba(255,255,255,0.05);transition:all .45s var(--ease);position:relative;overflow:visible;cursor:pointer}
+    .artist-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at top right, rgba(127,211,255,0.05), transparent);opacity:0;transition:opacity .45s}
+    .artist-card:hover{transform:translateY(-8px);box-shadow:0 28px 56px rgba(0,0,0,0.4);border-color:rgba(255,255,255,0.1)}
+    .artist-card:hover::before{opacity:1}
+    .artist-card.expanded{z-index:10}
+    .artist-photo{width:100%;height:200px;border-radius:14px;object-fit:cover;background:linear-gradient(135deg,#1a3f5f,#5b1a75);margin-bottom:14px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.4);font-size:48px;font-weight:900;position:relative;overflow:hidden}
+    .artist-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.05) 50%, transparent 60%);animation:shimmer 4s infinite}
+    .artist-name{font-weight:800;font-size:18px;margin-bottom:4px}
+    .artist-bio-short{color:var(--muted);font-size:14px}
+    
+    .artist-bio-panel{
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%) scale(0.8);
+      width:90%;
+      max-width:500px;
+      background:linear-gradient(135deg,#0f1826,#0a1420);
+      border-radius:20px;
+      padding:24px;
+      border:1px solid rgba(255,184,77,0.3);
+      box-shadow:0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(255,184,77,0.2), inset 0 1px 0 rgba(255,184,77,0.2);
+      opacity:0;
+      visibility: hidden;
+      transition:all .5s var(--ease);
+      z-index:200;
+    }
+    .artist-card.expanded .artist-bio-panel{
+      opacity:1;
+      visibility: visible;
+      transform:translate(-50%, -50%) scale(1);
+    }
+    .artist-card.expanded::after{
+      content:'';
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.7);
+      backdrop-filter:blur(8px);
+      z-index:150;
+      animation:fadeIn .3s ease;
+      cursor: default;
+    }
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes shimmer{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+    
+    .close-bio{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.1);border:none;color:white;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;font-weight:300;transition:all .3s var(--ease)}
+    .close-bio:hover{background:rgba(255,255,255,0.2);transform:scale(1.1)}
+
+    /* Visit Section */
+    .visit-grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start}
+    .ticket{background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));padding:28px;border-radius:20px;border:1px solid rgba(255,255,255,0.05);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+    .ticket h3{margin:0 0 20px;font-size:24px;font-weight:800}
+    .price-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px dashed rgba(255,255,255,0.08)}
+    .price-row:last-of-type{border:none}
+    .map-container{width:100%;height:180px;border-radius:12px;background:linear-gradient(135deg,#0a1826,#0e1f3a);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;position:relative;overflow:hidden;margin-top:12px}
+    .map-container::before{content:'';position:absolute;inset:0;background:url('data:image/svg+xml,<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');opacity:0.5}
+
+    /* About Section */
+    .about-content{background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));padding:32px;border-radius:20px;border:1px solid rgba(255,255,255,0.05)}
+    .about-content ul{margin:0;padding-left:24px;color:var(--muted);line-height:1.8}
+    .about-content li{margin-bottom:12px}
+
+    /* Footer */
+    footer{padding:48px 0;text-align:center;color:var(--muted);border-top:1px solid rgba(255,255,255,0.05); margin-top: auto;}
+
+    /* Utility */
+    .muted{color:var(--muted)}
+    .btn{padding:12px 20px;border-radius:12px;font-weight:700;font-size:15px;transition:all .3s var(--ease);display:inline-block; cursor: pointer; text-align: center; border: none; text-decoration: none;}
+    .btn:hover{transform:translateY(-2px)}
+    .text-center{text-align:center}
+    
+    /* Responsive */
+    @media (max-width:960px){
+      .hero{grid-template-columns:1fr;gap:24px; padding-top: 20px;}
+      .visit-grid{grid-template-columns:1fr}
+      header{top:16px}
+      nav{flex-wrap:wrap;padding:12px 16px; justify-content: center;}
+      .brand{width:100%; justify-content: center; padding: 0;}
+      .nav-links{width:100%;justify-content:space-between;flex-wrap:wrap; margin-top: 10px;}
+      .nav-links button{flex: 1 1 auto;}
+      .container{padding:24px 16px}
+      main{padding-top:180px}
+      h1{font-size:clamp(28px,8vw,48px)}
+    }
+    @media (max-width:640px){
+      .hero-card{padding:28px}
+      .nav-links button{padding:8px 10px;font-size:13px}
+      .logo{width:40px;height:40px;font-size:16px}
+      .hero{padding:20px 0 40px}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="spinner"></div>
+    <div class="loading-tip" id="loadingTip">Loading...</div>
+  </div>
+  
+  <header>
+    <nav class="container" aria-label="Primary navigation">
+      <div class="brand" onclick="navigateTo('home')">
+        <div class="logo">MS</div>
+        <div>
+          <div class="title">North Carolina Museum Of Art</div>
+          <div class="muted" style="font-size:11px">Art Museum</div>
+        </div>
+      </div>
+      <div class="nav-links" role="menubar">
+        <button onclick="navigateTo('home')" id="nav-home" class="active">Home</button>
+        <button onclick="navigateTo('exhibitions')" id="nav-exhibitions">Exhibitions</button>
+        <button onclick="navigateTo('artists')" id="nav-artists">Featured</button>
+        <button onclick="navigateTo('visit')" id="nav-visit">Visit</button>
+        <button onclick="navigateTo('about')" id="nav-about">About</button>
+        <button onclick="navigateTo('exhibitions')" class="cta">Explore</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    
+    <!-- PAGE 1: HOME -->
+    <div id="home" class="page active container">
+      <section class="hero">
+        <div class="hero-card">
+          <span class="kicker">FBLA Project</span>
+          <h1>North Carolina Museum Of Art</h1>
+          <p class="lead">Welcome to our museum! We have exhibits about Art, and student projects. You can learn about upcoming events, see featured people, and find information about visiting us.</p>
+          <div class="hero-actions">
+            <button class="btn cta" onclick="navigateTo('exhibitions')">See Exhibits</button>
+            <button class="btn" onclick="navigateTo('visit')" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:white">Plan Your Visit</button>
+          </div>
+          <div style="margin-top:20px;padding:16px;background:rgba(255,184,77,0.05);border-radius:12px;border:1px solid rgba(255,184,77,0.1)">
+            <div style="font-size:13px;color:var(--accent);font-weight:600">Tip</div>
+            <div style="color:var(--muted);font-size:13px;margin-top:4px">Press keys 1 to 5 to quickly jump to different pages</div>
+          </div>
+        </div>
+
+        <div class="hero-visual" style="position: relative;">
+            <img src="images/museum.png" 
+                 alt="Museum Hall" 
+                 style="width: 100%; height: 500px; object-fit: cover; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+        </div>
+      </section>
+    </div>
+
+    <!-- PAGE 2: EXHIBITIONS -->
+    <div id="exhibitions" class="page container">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Exhibitions</div>
+          <div class="section-sub">Check out our current and upcoming exhibits</div>
+        </div>
+        <div class="muted" style="font-weight:600">4 Exhibits</div>
+      </div>
+
+      <div class="calendar">
+        <article class="event-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div class="date-pill">Jan 5 to Feb 20</div>
+            <div class="muted" style="font-size:12px;font-weight:600">Main Gallery</div>
+          </div>
+          <h3>Student Startups</h3>
+          <p class="muted" style="margin:0">See projects made by students and learn about their ideas. This exhibit shows 12 different student businesses from around the area.</p>
+        </article>
+
+        <article class="event-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div class="date-pill">Mar 10 to Apr 30</div>
+            <div class="muted" style="font-size:12px;font-weight:600">Gallery B</div>
+          </div>
+          <h3>Young Leaders</h3>
+          <p class="muted" style="margin:0">Learn about young people in our community who made a difference. This exhibit has photos and stories about their leadership.</p>
+        </article>
+
+        <article class="event-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div class="date-pill">May 15 to Jun 10</div>
+            <div class="muted" style="font-size:12px;font-weight:600">Special Exhibit</div>
+          </div>
+          <h3>Business Through Time</h3>
+          <p class="muted" style="margin:0">This exhibit shows how businesses have changed over time. You can see old tools, documents, and learn about business history.</p>
+        </article>
+
+        <article class="event-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div class="date-pill">All Year</div>
+            <div class="muted" style="font-size:12px;font-weight:600">Online</div>
+          </div>
+          <h3>Digital Gallery</h3>
+          <p class="muted" style="margin:0">Visit our online gallery anytime! We have digital art and interactive projects you can view from home.</p>
+        </article>
+      </div>
+    </div>
+
+    <!-- PAGE 3: FEATURED ARTISTS -->
+    <div id="artists" class="page container">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Featured Artists</div>
+          <div class="section-sub">Meet the creators behind the art</div>
+        </div>
+        <div class="muted" style="font-weight:600">Our Team</div>
+      </div>
+      <div class="grid-cards">
+        
+        <!-- Artist 1 -->
+        <article class="artist-card" onclick="toggleArtistBio(this)">
+          <div class="artist-photo">
+            <img src="images/artist1.jpg" alt="Artist" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+          </div>
+          <div>
+            <div class="artist-name">Bri Buckley</div>
+            <div class="artist-bio-short">Raleigh, North Carolina Art Print</div>
+          </div>
+          <div class="artist-bio-panel">
+            <button class="close-bio" onclick="event.stopPropagation(); toggleArtistBio(this.closest('.artist-card'))">×</button>
+            <h4 style="margin:0 0 16px;font-size:20px;font-weight:800;color:white">Bri Buckley</h4>
+            <p style="color:var(--muted);margin:0;line-height:1.6;font-size:14px">Bri Buckley is a self-taught artist who tries different styles of art and techniques to create his distinctive look. He created the Raleigh, North Carolina Art Print to capture the city skylines with a unique, appealing style by mixing numerous paints and other things, including scraps of paper, watercolors, and digital editing.</p>
+          </div>
+        </article>
+
+        <!-- Artist 2 -->
+        <article class="artist-card" onclick="toggleArtistBio(this)">
+          <div class="artist-photo">
+            <img src="images/artist2.jpg" alt="Artist" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+          </div>
+          <div>
+            <div class="artist-name">Francis Speight</div>
+            <div class="artist-bio-short">Clouds Over Maynuk</div>
+          </div>
+          <div class="artist-bio-panel">
+            <button class="close-bio" onclick="event.stopPropagation(); toggleArtistBio(this.closest('.artist-card'))">×</button>
+            <h4 style="margin:0 0 16px;font-size:20px;font-weight:800;color:white">Francis Speight</h4>
+            <p style="color:var(--muted);margin:0;line-height:1.6;font-size:14px">Francis Speight was born in Windsor, North Carolina, the son of a farmer and Baptist Minister. He began his art education at Wake Forest College in 1915. Francis Speight painted Clouds Over Manayunk as part of his long-standing interest in the industrial landscape of Manayunk, a working-class mill district in Philadelphia.</p>
+          </div>
+        </article>
+
+        <!-- Artist 3 -->
+        <article class="artist-card" onclick="toggleArtistBio(this)">
+          <div class="artist-photo">
+            <img src="images/artist3.png" alt="Artist" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+          </div>
+          <div>
+            <div class="artist-name">William Mangum</div>
+            <div class="artist-bio-short">Almost Home</div>
+          </div>
+          <div class="artist-bio-panel">
+            <button class="close-bio" onclick="event.stopPropagation(); toggleArtistBio(this.closest('.artist-card'))">×</button>
+            <h4 style="margin:0 0 16px;font-size:20px;font-weight:800;color:white">William Mangum</h4>
+            <p style="color:var(--muted);margin:0;line-height:1.6;font-size:14px">Born in Pinehurst, North Carolina in 1953, William Mangum knew at the age of eight that he would pursue art as his livelihood and now he is known as North Carolina's best landscape artist. William Mangum created the art piece Almost Home as part of his annual Honor Card program to raise awareness and funds for the homeless and needy.</p>
+          </div>
+        </article>
+
+        <!-- Artist 4 -->
+        <article class="artist-card" onclick="toggleArtistBio(this)">
+          <div class="artist-photo">
+            <img src="images/artist4.jpg" alt="Artist" style="width:100%;height:100%;object-fit:cover;border-radius:14px">
+          </div>
+          <div>
+            <div class="artist-name">Tommy Midyette</div>
+            <div class="artist-bio-short">Raleigh In Winter</div>
+          </div>
+          <div class="artist-bio-panel">
+            <button class="close-bio" onclick="event.stopPropagation(); toggleArtistBio(this.closest('.artist-card'))">×</button>
+            <h4 style="margin:0 0 16px;font-size:20px;font-weight:800;color:white">Tommy Midyette</h4>
+            <p style="color:var(--muted);margin:0;line-height:1.6;font-size:14px">Tommy Midyette is a North Carolina-based artist known for his realistic portraits and paintings of famous Raleigh landmarks. He created the piece "Raleigh in Winter" because he wanted to paint the city where he grew up.</p>
+          </div>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- PAGE 4: VISIT -->
+    <div id="visit" class="page container">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Visitor Information</div>
+          <div class="section-sub">Everything you need to know before you visit</div>
+        </div>
+        <div class="muted" style="font-weight:600">Plan Ahead</div>
+      </div>
+
+      <div class="visit-grid">
+        <div>
+          <div class="ticket">
+            <h3>Hours and Tickets</h3>
+            <div class="price-row">
+              <div class="muted">Kids Above Ten</div>
+              <div><strong style="font-size:20px;color:var(--accent)">$5</strong></div>
+            </div>
+            <div class="price-row">
+              <div class="muted">Adults</div>
+              <div><strong style="font-size:20px;color:var(--accent)">$10</strong></div>
+            </div>
+            <div class="price-row">
+              <div class="muted">Kids Under Ten</div>
+              <div><strong style="font-size:20px;color:#7fd3ff">Free</strong></div>
+            </div>
+            <div style="padding-top:16px;color:var(--muted);line-height:1.6">
+              <strong style="color:#fff">Open Hours:</strong> Wednesday through Sunday<br>
+              10:00 AM to 5:00 PM<br>
+              <span style="font-size:13px">(Closed on Mondays and Tuesdays)</span>
+            </div>
+            <div style="margin-top:20px">
+              <button class="btn cta" style="width:100%;border:none;cursor:pointer">Buy Tickets</button>
+            </div>
+            <div style="margin-top:14px;padding:12px;background:rgba(255,184,77,0.06);border-radius:10px;border:1px solid rgba(255,184,77,0.1)">
+              <div style="color:var(--accent);font-size:12px;font-weight:700">Important Note</div>
+              <div style="color:var(--muted);font-size:12px;margin-top:4px">This is a practice website for FBLA. The ticket button does not really work.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;padding:24px;border-radius:18px;background:linear-gradient(135deg, rgba(127,211,255,0.06), rgba(127,211,255,0.02));border:1px solid rgba(127,211,255,0.1)">
+            <h4 style="margin:0 0 12px;font-size:18px">Accessibility</h4>
+            <p class="muted" style="margin:0;line-height:1.6">
+              Our museum is wheelchair accessible. We have elevators and ramps. You can also view some exhibits online if you cannot visit in person.
+            </p>
+          </div>
+        </div>
+
+        <aside>
+          <div style="padding:24px;border-radius:18px;background:linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));border:1px solid rgba(255,255,255,0.05)">
+            <h4 style="margin:0 0 12px;font-size:18px">Location</h4>
+            <p class="muted" style="margin:0 0 16px;line-height:1.6">
+              <strong style="color:#fff">North Carolina Museum Of Art</strong><br>
+               2110 Blue Ridge Rd, Raleigh, NC 27607<br>
+              
+            </p>
+            <div class="map-container">
+              <img src="images/North Carolina Museum Of Art 3.png" alt="Museum location map" style="width:100%;height:100%;object-fit:cover;border-radius:12px; opacity:0.6;">
+              <span style="position:absolute;font-weight:bold;color:white;text-shadow:0 2px 4px rgba(0,0,0,0.8)">Map View</span>
+            </div>
+            <div style="margin-top:14px;font-size:13px;color:var(--muted);line-height:1.6">
+              <strong style="color:#fff">Parking:</strong> Free parking available<br>
+              
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- PAGE 5: ABOUT -->
+    <div id="about" class="page container">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Sources</div>
+          <div class="section-sub">Project Information & Citations</div>
+        </div>
+        <div class="muted" style="font-weight:600">Project Info</div>
+      </div>
+
+      <div class="about-content">
+        <h4 style="margin:0 0 16px;font-size:18px;color:#fff">*all images found using creative commons license*</h4>
+        <ul>
+          <li><strong>Bri Buckley</strong> - https://bit.ly/BriBuckleyResources </li>
+          <li><strong>Francis Speight</strong> -https://bit.ly/FrancisSpeightResources </li>
+          <li><strong>William Magnum</strong> - https://bit.ly/WilliamMangumResources </li>
+          <li><strong>Tommy Midyette</strong> - https://bit.ly/TommyMiddyeteResources </li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="container">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+          <strong style="font-size:16px">FBLA's Museum Of Leadership & Enterprise</strong>
+          <div class="muted" style="font-size:13px;margin-top:4px">All Rights Reserved</div>
+        </div>
+        <div style="text-align:right">
+          <div style="color:var(--accent);font-weight:700;font-size:14px">Made by Siddhanth Banik, Ian John and Sagie Medvinsky</div>
+          <div class="muted" style="font-size:12px;margin-top:2px">With info provided from Mr. Staton and Mrs. Gardener</div>
+        </div>
+      </div>
+      <div style="margin-top:24px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.05);text-align:center">
+        <div class="muted" style="font-size:12px">
+          This is a mock website made for FBLA it is not functional so you cannot buy tickets.
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // --- PAGE NAVIGATION SYSTEM ---
+    
+    const pages = ['home', 'exhibitions', 'artists', 'visit', 'about'];
+    
+    function navigateTo(pageId) {
+        // 1. Hide all pages
+        pages.forEach(id => {
+            document.getElementById(id).classList.remove('active');
+            document.getElementById('nav-' + id)?.classList.remove('active');
+        });
+
+        // 2. Show target page
+        const target = document.getElementById(pageId);
+        if (target) {
+            target.classList.add('active');
+            // Scroll to top
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // 3. Update nav active state
+        const navBtn = document.getElementById('nav-' + pageId);
+        if(navBtn) navBtn.classList.add('active');
+    }
+
+    // --- KEYBOARD SHORTCUTS (1-5) ---
+    document.addEventListener('keydown', (e) => {
+        // Check if user is typing in an input field (safety check, though we have none)
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        switch(e.key) {
+            case '1': navigateTo('home'); break;
+            case '2': navigateTo('exhibitions'); break;
+            case '3': navigateTo('artists'); break;
+            case '4': navigateTo('visit'); break;
+            case '5': navigateTo('about'); break;
+        }
+    });
+
+    // --- LOADING SCREEN ---
+    const tips = [
+      'Use keys 1-5 to navigate between pages',
+      'This is a mock site made for FBLA',
+      'Click "Featured" to see artist bios',
+      'This website works on phones and tablets too',
+      'Click the logo to return to Home'
+    ];
+    
+    const loadingScreen = document.getElementById('loadingScreen');
+    const loadingTip = document.getElementById('loadingTip');
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+    loadingTip.textContent = randomTip;
+
+    setTimeout(() => {
+      loadingScreen.classList.add('hide');
+    }, 2500); // Shortened slightly for better UX
+
+    // --- ARTIST BIO TOGGLE ---
+    function toggleArtistBio(card) {
+      // Close all other expanded cards first
+      const allCards = document.querySelectorAll('.artist-card');
+      allCards.forEach(c => {
+        if (c !== card && c.classList.contains('expanded')) {
+          c.classList.remove('expanded');
+        }
+      });
+      
+      // Toggle the clicked card
+      card.classList.toggle('expanded');
+    }
+
+    // Close expanded bio when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.artist-card')) {
+        document.querySelectorAll('.artist-card.expanded').forEach(card => {
+          card.classList.remove('expanded');
+        });
+      }
+    });
+
+  </script>
+</body>
+</html>
